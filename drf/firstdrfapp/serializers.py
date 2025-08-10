@@ -1,8 +1,15 @@
 from rest_framework import serializers
-from .models import Snippets,LANGUAGE_CHOICES,STYLE_CHOICES
+from .models import Post,CustomUser
+from django.db import transaction
 
-class SnippetSerializer(serializers.ModelSerializer):
+class PostSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Snippets
-        fields = ['id','title','code','linenos','language','style']
+        model = Post
+        fields = ['title','content']
 
+    @transaction.atomic
+    def create(self,request,**validated_data):
+        post = Post(**validated_data)
+        
+
+        return post

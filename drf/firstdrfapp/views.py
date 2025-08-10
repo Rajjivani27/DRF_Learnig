@@ -2,56 +2,43 @@ from django.http import HttpResponse,JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
-from .models import Snippets
-from .serializers import SnippetSerializer
+from .models import *
+from .serializers import PostSerializer
+from rest_framework import generics
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
+from django.views.generic import ListView,DetailView,CreateView,DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404
+from django.template import loader,TemplateDoesNotExist
 
-@csrf_exempt
-def snippet_list(request):
-    """
-    List all code snippets, or create a new snippet
-    """
+class PostDetailView(DetailView):
+    model = Post
+    context_object_name = 'posts'
+    ordering = ['-created_at','-id']
+    paginated_by = 10
 
-    if request.method == "GET":
-        snippets = Snippets.objects.all()
-        serializer = SnippetSerializer(snippets,many=True)
-        return JsonResponse(serializer.data,safe=False)
-    
-    elif request.method == "POST":
-        data = JSONParser().parse(request)
-        serializer = SnippetSerializer(data = data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data,status=201)
-        return JsonResponse(serializer.errors,status = 400)
-    
+class PostListView(ListView):
+    model = Post
+    template_name = 'firstdrfapp/post.html'
 
-@csrf_exempt
-def snippets_detail(request,pk):
-    """
-    Retrive,update or delete a code snippet.
-    """
+    def get_template_names(self):
+        try:
+            loader.get_template(self.template_name)
+            return [self.template_name]
+        except TemplateDoesNotExist:
+            raise TemplateDoesNotExist(f"The provided template does not exist in system : {self.template_name}")
 
-    try:
-        snippet = Snippets.objects.get(pk=pk)
-    except Snippets.DoesNotExist:
-        return HttpResponse(status=404)
+class PostCreateView(LoginRequiredMixin,CreateView):
+    model = Post
+    fields = ['title','content']
     
-    if request.method == "GET":
-        serializer = SnippetSerializer(snippet)
-        return JsonResponse(serializer.data)
-    
-    elif request.method == "PUT":
-        data = JSONParser().parse(request)
-        serializer = SnippetSerializer(snippet,data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors,status=400)
-    
-    elif request.method == "DELETE":
-        snippet.delete()
-        return HttpResponse(status=204)
+    def form_valid(self, form):
+        title = form.cleaned_data['title']
+        content = form.cleaned_data['content']
         
+        form.instance.author = self.request.user
 
-
+        self.object = form.save()
+        return super().form_valid(form)
 # Create your views here.
