@@ -1,6 +1,7 @@
 from django.http import HttpResponse,JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from .models import *
 from .serializers import PostSerializer
@@ -11,6 +12,8 @@ from django.views.generic import ListView,DetailView,CreateView,DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.template import loader,TemplateDoesNotExist
+from rest_framework import viewsets
+from datetime import datetime
 
 class PostDetailView(DetailView):
     model = Post
@@ -41,4 +44,18 @@ class PostCreateView(LoginRequiredMixin,CreateView):
 
         self.object = form.save()
         return super().form_valid(form)
+    
+class PostCreateAPI(viewsets.ViewSet):
+    # try:
+    def list(self,request):
+        queryset = Post.objects.all()
+        serializer = PostSerializer(queryset,many=True)
+        return Response(serializer.data)
+    # except AssertionError:
+    #     print(AssertionError.__cause__)
+    # except ValueError:
+    #     print(ValueError)
+    # except TypeError:
+    #     print(TypeError)
+
 # Create your views here.
