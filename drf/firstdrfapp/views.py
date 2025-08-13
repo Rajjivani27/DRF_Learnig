@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from .models import *
-from .serializers import PostSerializer
+from .serializers import PostSerializer,CustomUserSerializer
 from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -12,8 +12,9 @@ from django.views.generic import ListView,DetailView,CreateView,DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.template import loader,TemplateDoesNotExist
-from rest_framework import viewsets
+from rest_framework import viewsets,views,generics
 from datetime import datetime
+from firstdrfapp import urls
 
 class PostDetailView(DetailView):
     model = Post
@@ -46,16 +47,49 @@ class PostCreateView(LoginRequiredMixin,CreateView):
         return super().form_valid(form)
     
 class PostCreateAPI(viewsets.ViewSet):
-    # try:
     def list(self,request):
         queryset = Post.objects.all()
         serializer = PostSerializer(queryset,many=True)
         return Response(serializer.data)
-    # except AssertionError:
-    #     print(AssertionError.__cause__)
-    # except ValueError:
-    #     print(ValueError)
-    # except TypeError:
-    #     print(TypeError)
+    
+class PostViewSet(viewsets.ViewSet):
+    lookup_field = 'pk'
+
+    def list(self,request):
+        print(f"Urls : {urls.urlpatterns}")
+        print("Reached Here in list")
+        queryset = Post.objects.all()
+        serializer = PostSerializer(queryset,many=True,context = {'request':request})
+        print("Reaching Here in list")
+        print(serializer.data)
+        return Response(serializer.data)
+    
+    def retrieve(self,request,pk=None):
+        print("Reached here")
+        posts = Post.objects.all()
+        post = get_object_or_404(posts,pk=pk)
+        serializer = PostSerializer(post)
+        return Response(serializer.data)
+    
+# class PostDetail(generics.RetrieveAPIView):
+#     queryset = Post.objects.all()
+#     serializer_class = PostSerializer
+#     lookup_field = 'pk'
+    
+    
+class CustomUserDetail(generics.RetrieveAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    lookup_field = 'pk'
+
+    def retrieve(self, request,pk=None):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer_class()
+        user = get_object_or_404(queryset,pk=pk)
+        userReturn = serializer(user)
+        return Response(userReturn.data)
+
+    
+    
 
 # Create your views here.

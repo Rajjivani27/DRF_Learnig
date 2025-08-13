@@ -3,14 +3,20 @@ from .models import Post,CustomUser
 from django.db import transaction
 from rest_framework.renderers import JSONRenderer
 
-class PostSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=100)
-    content = serializers.CharField()
-    created_at = serializers.DateTimeField()
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id','email','username']
 
-    def create(self,validated_data):
-        print(validated_data)
-        post = Post(**validated_data)
-        post.save()
-        return post
+class PostSerializer(serializers.HyperlinkedModelSerializer):
+    print("Data Came Up")
+    class Meta:
+        model = Post
+        fields = ['url','title','content','author']
+        extra_kwargs = {
+            'url': {'view_name': 'post-detail','lookup_field':'pk'},
+            'author': {'view_name': 'custom_user-detail','lookup_field':'pk'}
+        }
+
+    
 
