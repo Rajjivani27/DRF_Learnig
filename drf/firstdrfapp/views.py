@@ -56,25 +56,15 @@ class PostViewSet(viewsets.ViewSet):
     lookup_field = 'pk'
 
     def list(self,request):
-        print(f"Urls : {urls.urlpatterns}")
-        print("Reached Here in list")
         queryset = Post.objects.all()
         serializer = PostSerializer(queryset,many=True,context = {'request':request})
-        print("Reaching Here in list")
-        print(serializer.data)
         return Response(serializer.data)
     
     def retrieve(self,request,pk=None):
-        print("Reached here")
         posts = Post.objects.all()
         post = get_object_or_404(posts,pk=pk)
         serializer = PostSerializer(post)
         return Response(serializer.data)
-    
-# class PostDetail(generics.RetrieveAPIView):
-#     queryset = Post.objects.all()
-#     serializer_class = PostSerializer
-#     lookup_field = 'pk'
     
     
 class CustomUserDetail(generics.RetrieveAPIView):
