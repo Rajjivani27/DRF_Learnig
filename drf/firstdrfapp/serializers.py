@@ -9,7 +9,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         fields = ['id','email','username']
 
 class PostSerializer(serializers.HyperlinkedModelSerializer):
-    print("Data Came Up")
     class Meta:
         model = Post
         fields = ['url','title','content','author']

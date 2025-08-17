@@ -1,5 +1,7 @@
 from django.http import HttpResponse,JsonResponse
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
@@ -55,6 +57,7 @@ class PostCreateAPI(viewsets.ViewSet):
 class PostViewSet(viewsets.ViewSet):
     lookup_field = 'pk'
 
+    @cache_page(60*60*2,key_prefix='')
     def list(self,request):
         queryset = Post.objects.all()
         serializer = PostSerializer(queryset,many=True,context = {'request':request})

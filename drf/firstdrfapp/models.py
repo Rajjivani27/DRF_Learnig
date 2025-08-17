@@ -1,4 +1,9 @@
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import (
+    pre_save,
+    post_save
+)
 
 # Create your models here.
 from django.db import models
@@ -42,4 +47,13 @@ class Post(models.Model):
     
     def __str__(self):
         return self.title
+    
+@receiver(post_save,sender=CustomUser)
+def custom_user_pre_save(sender,instance,created,*args,**kwargs):
+    if created:
+        print("Object is created")
+    else:
+        print("Object is updated")
+
+
 # Create your models here.
