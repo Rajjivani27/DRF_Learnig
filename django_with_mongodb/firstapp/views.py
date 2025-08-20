@@ -1,11 +1,16 @@
 from .models import *
-from .serializers import PostSerializer,CustomUserSerializer
+from .serializers import PostSerializer,CustomUserSerializer,CustomTokenPairObtainSerializer,RefreshTokenSerializer
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import ListModelMixin,RetrieveModelMixin,CreateModelMixin
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView
+)
+from django.core.exceptions import ObjectDoesNotExist
 
 class UserCreateAPI(GenericAPIView,CreateModelMixin):
     serializer_class = CustomUserSerializer
@@ -27,5 +32,14 @@ class PostListAPI(GenericAPIView,ListModelMixin,RetrieveModelMixin,CreateModelMi
         if 'pk' in kwargs:
             return self.retrieve(request,*args,**kwargs)
         return self.list(request,*args,**kwargs)
+    
+class LoginAPI(TokenObtainPairView,GenericAPIView):
+    serializer_class = CustomTokenPairObtainSerializer
+
+class RefreshTokenAPI(TokenRefreshView,GenericAPIView):
+    serializer_class = RefreshTokenSerializer
+        
+
+    
 
 # Create your views here.

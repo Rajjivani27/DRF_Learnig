@@ -1,7 +1,10 @@
 from rest_framework import serializers 
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError,AuthenticationFailed
 from .models import *
 from mongoengine.errors import NotUniqueError
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 class CustomUserSerializer(serializers.Serializer):
     id = serializers.CharField(read_only = True)
@@ -18,12 +21,13 @@ class CustomUserSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         try:
+            for key in validated_data:
+                print(key)
+
             validated_data.pop('password2')
             password = validated_data.pop('password')
             user = CustomUser(**validated_data)
             user.set_password(password)
-            print(user.email)
-            print(user.email)
             user.save()
             print(user)
             return user
@@ -36,3 +40,40 @@ class PostSerializer(serializers.Serializer):
     title = serializers.CharField()
     content = serializers.CharField()
     author = serializers.CharField(source='author.id',read_only=True)
+
+class CustomTokenPairObtainSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+
+        try:
+            user = CustomUser.objects.get(email = email)
+        except ObjectDoesNotExist:
+            raise AuthenticationFailed("Invalid Credentials")
+        
+        if not user.check_password(password):
+            raise AuthenticationFailed("Invalid Credentials")
+        
+        refresh = RefreshToken.for_user(user)
+
+        return {
+            "refresh": str(refresh),
+            "access" : str(refresh.access_token)
+        }
+    
+class RefreshTokenSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()
+
+    def validate(self, data):
+        refresh_token = data.get('refresh_token')
+
+        refresh = RefreshToken(refresh_token)
+
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token)
+        }
+        

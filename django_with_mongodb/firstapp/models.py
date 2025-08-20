@@ -15,18 +15,22 @@ class CustomUser(me.Document):
         self.password = make_password(raw_password)
 
     def check_password(self,raw_password):
-        return check_password(raw_password) == self.password
+        return check_password(raw_password,self.password)
     
     def __str__(self):
         return self.username
 
+class Author(Document):
+    name = StringField(max_length=100)
 
+    def __str__(self):
+        return self.name
 
 class Post(Document):
     title = StringField(required=True,max_length=200)
     content = StringField()
     likes = IntField(default=0)
-    author = me.ReferenceField(CustomUser,reverse_delete_rule=me.CASCADE)
+    author = me.ReferenceField(Author,reverse_delete_rule=me.CASCADE)
 
     meta = {
         'collection':'posts'
