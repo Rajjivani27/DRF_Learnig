@@ -78,6 +78,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'django_with_mongodb.wsgi.application'
 
+AUTHENTICATION_BACKENDS = ["firstapp.backends.MongoEngineBackend"]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES" : (
+        "firstapp.authentication_classes.CustomJWTAuthetication",
+    )
+}
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
