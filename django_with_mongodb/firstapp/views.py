@@ -11,6 +11,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView
 )
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.permissions import IsAuthenticated
 
 class UserCreateAPI(GenericAPIView,CreateModelMixin):
     serializer_class = CustomUserSerializer
@@ -22,7 +23,7 @@ class UserCreateAPI(GenericAPIView,CreateModelMixin):
         return Response(serializer.data,status=status.HTTP_201_CREATED)
 
 
-class PostListAPI(GenericAPIView,ListModelMixin,RetrieveModelMixin,CreateModelMixin):
+class PostListAPI(GenericAPIView,ListModelMixin,RetrieveModelMixin):
     serializer_class = PostSerializer
 
     def get_queryset(self):
@@ -32,6 +33,20 @@ class PostListAPI(GenericAPIView,ListModelMixin,RetrieveModelMixin,CreateModelMi
         if 'pk' in kwargs:
             return self.retrieve(request,*args,**kwargs)
         return self.list(request,*args,**kwargs)
+    
+class PostCreateAPI(GenericAPIView,CreateModelMixin):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self,request,*args,**kwargs):
+        data = request.POST
+        serializer = self.serializer_class(data = data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author = request.user)
+
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
+
+
     
 class LoginAPI(TokenObtainPairView,GenericAPIView):
     serializer_class = CustomTokenPairObtainSerializer

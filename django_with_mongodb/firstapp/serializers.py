@@ -41,6 +41,12 @@ class PostSerializer(serializers.Serializer):
     content = serializers.CharField()
     author = serializers.CharField(source='author.id',read_only=True)
 
+    def create(self, validated_data):
+        post = Post(**validated_data)
+        post.save()
+
+        return post
+
 class CustomTokenPairObtainSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()

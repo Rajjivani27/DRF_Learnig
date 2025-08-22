@@ -9,6 +9,7 @@ urlpatterns = [
     path('register_user/',UserCreateAPI.as_view(),name="user-register"),
     path('post_list/',PostListAPI.as_view(),name="post-list"),
     path('post_list/<pk>/',PostListAPI.as_view(),name="post-retrive"),
+    path('post_create/',PostCreateAPI.as_view(),name="post-create-api"),
     path('api/token/',LoginAPI.as_view(),name="token-obtain-api"),
     path('api/token/refresh/',RefreshTokenAPI.as_view(),name="refresh-token-api")
 ]

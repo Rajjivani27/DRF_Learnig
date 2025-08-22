@@ -19,6 +19,15 @@ class CustomUser(me.Document):
     
     def __str__(self):
         return self.username
+    
+    @property
+    def is_authenticated(self):
+        return True
+    
+    @property
+    def is_anonymous(self):
+        return False
+        
 
 class Author(Document):
     name = StringField(max_length=100)
@@ -30,7 +39,7 @@ class Post(Document):
     title = StringField(required=True,max_length=200)
     content = StringField()
     likes = IntField(default=0)
-    author = me.ReferenceField(Author,reverse_delete_rule=me.CASCADE)
+    author = me.ReferenceField(CustomUser,reverse_delete_rule=me.CASCADE)
 
     meta = {
         'collection':'posts'
